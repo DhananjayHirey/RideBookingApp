@@ -18,6 +18,26 @@ public class GrpcJwtInterceptor implements ClientInterceptor {
             CallOptions callOptions,
             Channel next
     ) {
-        return next.newCall(method, callOptions);
+
+        return new ForwardingClientCall.SimpleForwardingClientCall<>(
+                next.newCall(method, callOptions)
+        ) {
+            @Override
+            public void start(Listener<RespT> responseListener, Metadata headers) {
+
+                // Pull JWT from Reactor Context
+                ContextView reactorContext =
+                        reactor.util.context.Context.of(Context.current());
+
+                if (reactorContext.hasKey("AUTH_HEADER")) {
+                    String authHeader = reactorContext.get("AUTH_HEADER");
+                    if (authHeader != null) {
+                        headers.put(AUTHORIZATION_KEY, authHeader);
+                    }
+                }
+
+                super.start(responseListener, headers);
+            }
+        };
     }
 }

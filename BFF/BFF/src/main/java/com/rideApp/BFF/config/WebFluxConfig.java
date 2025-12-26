@@ -24,9 +24,23 @@ public class WebFluxConfig implements WebFluxConfigurer {
 
     @Bean
     public WebFilter reactorContextWebFilter() {
-        return (exchange, chain) ->
-                chain.filter(exchange)
-                        .contextWrite(ctx -> ctx.put(ServerWebExchange.class, exchange));
+        return (exchange, chain) -> {
+
+            String authHeader = exchange.getRequest()
+                    .getHeaders()
+                    .getFirst(org.springframework.http.HttpHeaders.AUTHORIZATION);
+
+            return chain.filter(exchange)
+                    .contextWrite(ctx -> {
+                                if (authHeader != null) {
+                                    return ctx
+                                            .put(ServerWebExchange.class, exchange)
+                                            .put("AUTH_HEADER", authHeader);
+                                }
+                                return ctx.put(ServerWebExchange.class, exchange);
+                            }
+                    );
+        };
     }
 
 }
