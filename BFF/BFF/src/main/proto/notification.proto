@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package notification;
+
+option java_multiple_files = true;
+option java_package = "com.rideApp.BFF.notification";
+option java_outer_classname = "NotificationProto";
+
+service NotificationService {
+  rpc GetNotifications (GetNotificationsRequest)
+      returns (NotificationListResponse);
+}
+
+message GetNotificationsRequest {
+  string user_id = 1;
+}
+
+message Notification {
+  string id = 1;
+  string message = 2;
+  bool read = 3;
+  int64 created_at_epoch = 4;
+}
+
+message NotificationListResponse {
+  repeated Notification notifications = 1;
+}
