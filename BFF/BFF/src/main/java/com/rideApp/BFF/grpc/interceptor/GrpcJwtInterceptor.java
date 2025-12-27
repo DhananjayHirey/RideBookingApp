@@ -1,13 +1,16 @@
 package com.rideApp.BFF.grpc.interceptor;
 
 import io.grpc.*;
-import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
-import org.springframework.web.server.ServerWebExchange;
-//import reactor.core.publisher.Mono;
 import reactor.util.context.ContextView;
+import io.micrometer.context.ContextSnapshot;
+
+
 @Component
 public class GrpcJwtInterceptor implements ClientInterceptor {
+
+    public static final Context.Key<String> AUTH_CONTEXT_KEY =
+            Context.key("AUTH_HEADER");
 
     static final Metadata.Key<String> AUTHORIZATION_KEY =
             Metadata.Key.of("authorization", Metadata.ASCII_STRING_MARSHALLER);
@@ -25,15 +28,10 @@ public class GrpcJwtInterceptor implements ClientInterceptor {
             @Override
             public void start(Listener<RespT> responseListener, Metadata headers) {
 
-                // Pull JWT from Reactor Context
-                ContextView reactorContext =
-                        reactor.util.context.Context.of(Context.current());
+                String authHeader = AUTH_CONTEXT_KEY.get();
 
-                if (reactorContext.hasKey("AUTH_HEADER")) {
-                    String authHeader = reactorContext.get("AUTH_HEADER");
-                    if (authHeader != null) {
-                        headers.put(AUTHORIZATION_KEY, authHeader);
-                    }
+                if (authHeader != null) {
+                    headers.put(AUTHORIZATION_KEY, authHeader);
                 }
 
                 super.start(responseListener, headers);
