@@ -1,4 +1,4 @@
-package com.rideApp.AuthService.service;
+package com.rideApp.AuthService.grpc;
 
 import com.rideApp.AuthService.AuthResponse;
 import com.rideApp.AuthService.AuthServiceGrpc;
@@ -6,7 +6,9 @@ import com.rideApp.AuthService.LoginRequest;
 import com.rideApp.AuthService.RefreshRequest;
 import com.rideApp.AuthService.entity.User;
 import com.rideApp.AuthService.repository.UserRepository;
+import com.rideApp.AuthService.service.JwtService;
 import io.grpc.stub.StreamObserver;
+import jakarta.annotation.PostConstruct;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.grpc.server.service.GrpcService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -36,6 +38,8 @@ public class AuthGrpcService extends AuthServiceGrpc.AuthServiceImplBase {
         User user = userRepo.findByPhoneNumber(request.getPhoneNumber())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+//        System.out.println(user.getPasswordHash());
+//        System.out.println(request.getPassword());
         if (!encoder.matches(request.getPassword(), user.getPasswordHash())) {
             throw new RuntimeException("Invalid credentials");
         }
@@ -83,5 +87,11 @@ public class AuthGrpcService extends AuthServiceGrpc.AuthServiceImplBase {
                 .build());
 
         observer.onCompleted();
+    }
+
+    @PostConstruct
+    public void redisHealthCheck() {
+        redisTemplate.opsForValue().set("hello", "redis");
+        System.out.println(redisTemplate.opsForValue().get("hello"));
     }
 }

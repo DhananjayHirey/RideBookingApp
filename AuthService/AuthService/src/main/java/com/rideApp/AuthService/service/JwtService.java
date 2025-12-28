@@ -3,6 +3,7 @@ package com.rideApp.AuthService.service;
 import com.rideApp.AuthService.entity.User;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -21,4 +22,6 @@ public class JwtService {
                 .signWith(Keys.hmacShaKeyFor(SECRET.getBytes()))
                 .compact();
     }
+
+
 }
