@@ -1,12 +1,11 @@
 package com.rideApp.AuthService.grpc;
 
-import com.rideApp.AuthService.AuthResponse;
-import com.rideApp.AuthService.AuthServiceGrpc;
-import com.rideApp.AuthService.LoginRequest;
-import com.rideApp.AuthService.RefreshRequest;
+import com.rideApp.AuthService.*;
+import com.rideApp.AuthService.entity.Role;
 import com.rideApp.AuthService.entity.User;
 import com.rideApp.AuthService.repository.UserRepository;
 import com.rideApp.AuthService.service.JwtService;
+import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import jakarta.annotation.PostConstruct;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -54,6 +53,7 @@ public class AuthGrpcService extends AuthServiceGrpc.AuthServiceImplBase {
                 .setAccessToken(accessToken)
                 .setRefreshToken(refreshToken)
                 .setRole(user.getRole().name())
+                .setUserId(user.getId().toString())
                 .build();
 
         responseObserver.onNext(response);
@@ -88,6 +88,83 @@ public class AuthGrpcService extends AuthServiceGrpc.AuthServiceImplBase {
 
         observer.onCompleted();
     }
+
+    @Override
+    public void register(RegisterRequest request,
+                         StreamObserver<AuthResponse> observer) {
+
+        try {
+            if (request.getPhoneNumber().isBlank() || request.getPassword().isBlank()) {
+                observer.onError(
+                        Status.INVALID_ARGUMENT
+                                .withDescription("Phone and password required")
+                                .asRuntimeException()
+                );
+                return;
+            }
+
+            if (userRepo.findByPhoneNumber(request.getPhoneNumber()).isPresent()) {
+                observer.onError(
+                        Status.ALREADY_EXISTS
+                                .withDescription("User already exists")
+                                .asRuntimeException()
+                );
+                return;
+            }
+
+            Role role;
+            try {
+                role = Role.valueOf(request.getRole().toUpperCase());
+            } catch (IllegalArgumentException e) {
+                observer.onError(
+                        Status.INVALID_ARGUMENT
+                                .withDescription("Invalid role")
+                                .asRuntimeException()
+                );
+                return;
+            }
+
+            User user = new User();
+            user.setId(UUID.randomUUID());
+            user.setPhoneNumber(request.getPhoneNumber());
+            user.setEmail(request.getEmail());
+            user.setPasswordHash(encoder.encode(request.getPassword()));
+            user.setRole(role);
+            user.setActive(true);
+
+            userRepo.save(user);
+
+            String accessToken = jwtService.generateAccessToken(user);
+            String refreshToken = UUID.randomUUID().toString();
+
+            redisTemplate.opsForValue()
+                    .set("refresh:" + refreshToken,
+                            user.getId().toString(),
+                            7,
+                            TimeUnit.DAYS);
+
+            observer.onNext(
+                    AuthResponse.newBuilder()
+                            .setAccessToken(accessToken)
+                            .setRefreshToken(refreshToken)
+                            .setRole(role.name())
+                            .setUserId(user.getId().toString())
+                            .build()
+            );
+
+            observer.onCompleted();
+
+        } catch (Exception e) {
+            e.printStackTrace(); // 👈 you WILL see the real cause now
+            observer.onError(
+                    Status.INTERNAL
+                            .withDescription("Registration failed")
+                            .asRuntimeException()
+            );
+        }
+    }
+
+
 
     @PostConstruct
     public void redisHealthCheck() {
