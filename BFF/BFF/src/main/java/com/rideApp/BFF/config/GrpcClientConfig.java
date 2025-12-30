@@ -8,58 +8,70 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
 @Configuration
 public class GrpcClientConfig {
 
-    @Bean
-    public ManagedChannel userServiceChannel() {
-        return ManagedChannelBuilder
-                .forAddress("user-service", 9090)
-                .usePlaintext()
-                .build();
-    }
+        @Bean
+        public ManagedChannel userServiceChannel() {
+                return ManagedChannelBuilder
+                                .forAddress("localhost", 9090)
+                                .usePlaintext()
+                                .build();
+        }
 
-    @Bean
-    public ManagedChannel orderServiceChannel() {
-        return ManagedChannelBuilder
-                .forAddress("order-service", 9091)
-                .usePlaintext()
-                .build();
-    }
+        @Bean
+        public ManagedChannel orderServiceChannel() {
+                return ManagedChannelBuilder
+                                .forAddress("locahost", 9091)
+                                .usePlaintext()
+                                .build();
+        }
 
-    @Bean
-    public ManagedChannel notificationServiceChannel() {
-        return ManagedChannelBuilder
-                .forAddress("notification-service", 9092)
-                .usePlaintext()
-                .build();
-    }
+        @Bean
+        public ManagedChannel notificationServiceChannel() {
+                return ManagedChannelBuilder
+                                .forAddress("notification-service", 9092)
+                                .usePlaintext()
+                                .build();
+        }
 
-    @Bean
-    public UserServiceGrpc.UserServiceStub userServiceStub(
-            ManagedChannel userServiceChannel,
-            GrpcJwtInterceptor jwtInterceptor
-    ) {
-        return UserServiceGrpc.newStub(userServiceChannel)
-                .withInterceptors(jwtInterceptor);
-    }
+        @Bean
+        public UserServiceGrpc.UserServiceStub userServiceStub(
+                        ManagedChannel userServiceChannel,
+                        GrpcJwtInterceptor jwtInterceptor) {
+                return UserServiceGrpc.newStub(userServiceChannel)
+                                .withInterceptors(jwtInterceptor);
+        }
 
-    @Bean
-    public OrderServiceGrpc.OrderServiceStub orderServiceStub(
-            ManagedChannel orderServiceChannel,
-            GrpcJwtInterceptor jwtInterceptor
-    ) {
-        return OrderServiceGrpc.newStub(orderServiceChannel)
-                .withInterceptors(jwtInterceptor);
-    }
+        @Bean
+        public OrderServiceGrpc.OrderServiceStub orderServiceStub(
+                        ManagedChannel orderServiceChannel,
+                        GrpcJwtInterceptor jwtInterceptor) {
+                return OrderServiceGrpc.newStub(orderServiceChannel)
+                                .withInterceptors(jwtInterceptor);
+        }
 
-    @Bean
-    public NotificationServiceGrpc.NotificationServiceStub notificationServiceStub(
-            ManagedChannel notificationServiceChannel,
-            GrpcJwtInterceptor jwtInterceptor
-    ) {
-        return NotificationServiceGrpc.newStub(notificationServiceChannel)
-                .withInterceptors(jwtInterceptor);
-    }
+        @Bean
+        public NotificationServiceGrpc.NotificationServiceStub notificationServiceStub(
+                        ManagedChannel notificationServiceChannel,
+                        GrpcJwtInterceptor jwtInterceptor) {
+                return NotificationServiceGrpc.newStub(notificationServiceChannel)
+                                .withInterceptors(jwtInterceptor);
+        }
+
+        @Bean
+        public ManagedChannel authServiceChannel() {
+                return ManagedChannelBuilder
+                                .forAddress("localhost", 9090)
+                                .usePlaintext()
+                                .build();
+        }
+
+        @Bean
+        public com.rideApp.AuthService.AuthServiceGrpc.AuthServiceStub authServiceStub(
+                        ManagedChannel authServiceChannel) {
+                return com.rideApp.AuthService.AuthServiceGrpc.newStub(authServiceChannel);
+        }
 
 }

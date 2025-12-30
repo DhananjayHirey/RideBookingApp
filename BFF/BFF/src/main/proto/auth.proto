@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.rideApp.AuthService";
+option java_outer_classname = "AuthProto";
+
+service AuthService {
+
+  // Login with credentials
+  rpc Login (LoginRequest) returns (AuthResponse);
+
+  // Register new user (signup)
+  rpc Register (RegisterRequest) returns (AuthResponse);
+
+  // Refresh access token
+  rpc RefreshToken (RefreshRequest) returns (AuthResponse);
+}
+
+message LoginRequest {
+  string phoneNumber = 1;
+  string password = 2;
+}
+
+message RegisterRequest {
+  string phoneNumber = 1;
+  string email = 2;
+  string password = 3;
+  string role = 4;   // RIDER or DRIVER
+}
+
+message RefreshRequest {
+  string refreshToken = 1;
+}
+
+message AuthResponse {
+  string accessToken = 1;
+  string refreshToken = 2;
+  string role = 3;
+  string userId = 4; // IMPORTANT: used by BFF to call User Service
+}
