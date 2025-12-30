@@ -12,7 +12,7 @@
 	<artifactId>UserService</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>UserService</name>
-	<description>User Service for ride booking app</description>
+	<description>User Service for Quick Trip</description>
 	<url/>
 	<licenses>
 		<license/>

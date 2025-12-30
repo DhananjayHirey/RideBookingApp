@@ -4,6 +4,7 @@ import com.rideApp.AuthService.LoginRequest;
 import com.rideApp.AuthService.RefreshRequest;
 import com.rideApp.AuthService.RegisterRequest;
 import com.rideApp.AuthService.AuthResponse;
+import com.rideApp.BFF.dto.AuthResponseDto;
 import com.rideApp.BFF.grpc.client.AuthGrpcClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,7 +21,7 @@ public class AuthController {
     private final AuthGrpcClient authGrpcClient;
 
     @PostMapping("/register")
-    public Mono<AuthResponse> register(@RequestBody RegisterDto registerDto) {
+    public Mono<AuthResponseDto> register(@RequestBody RegisterDto registerDto) {
         RegisterRequest request = RegisterRequest.newBuilder()
                 .setPhoneNumber(registerDto.phoneNumber())
                 .setEmail(registerDto.email())
@@ -31,7 +32,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public Mono<AuthResponse> login(@RequestBody LoginDto loginDto) {
+    public Mono<AuthResponseDto> login(@RequestBody LoginDto loginDto) {
         LoginRequest request = LoginRequest.newBuilder()
                 .setPhoneNumber(loginDto.phoneNumber())
                 .setPassword(loginDto.password())
@@ -40,7 +41,7 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
-    public Mono<AuthResponse> refresh(@RequestBody RefreshDto refreshDto) {
+    public Mono<AuthResponseDto> refresh(@RequestBody RefreshDto refreshDto) {
         RefreshRequest request = RefreshRequest.newBuilder()
                 .setRefreshToken(refreshDto.refreshToken())
                 .build();
