@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.rideApp.UserService";
+
+service UserService {
+
+  // Called once after signup
+  rpc CreateRider(CreateRiderRequest) returns (Empty);
+  rpc CreateDriver(CreateDriverRequest) returns (Empty);
+
+  // Protected routes (JWT already validated by BFF)
+  rpc GetRiderProfile(GetProfileRequest) returns (RiderProfile);
+  rpc GetDriverProfile(GetProfileRequest) returns (DriverProfile);
+}
+
+message CreateRiderRequest {
+  string userId = 1;
+  string name = 2;
+}
+
+message CreateDriverRequest {
+  string userId = 1;
+}
+
+message GetProfileRequest {
+  string userId = 1;
+}
+
+message RiderProfile {
+  string userId = 1;
+  string name = 2;
+  double rating = 3;
+  int32 totalRides = 4;
+}
+
+message DriverProfile {
+  string userId = 1;
+  string status = 2;
+  double rating = 3;
+}
+
+message Empty {}
