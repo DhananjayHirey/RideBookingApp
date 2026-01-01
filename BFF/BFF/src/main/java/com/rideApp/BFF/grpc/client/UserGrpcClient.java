@@ -1,63 +1,129 @@
 package com.rideApp.BFF.grpc.client;
 
-import com.rideApp.BFF.domain.User;
-import com.rideApp.BFF.grpc.interceptor.GrpcJwtInterceptor;
-import com.rideApp.BFF.user.GetUserRequest;
-import com.rideApp.BFF.user.UserResponse;
-import com.rideApp.BFF.user.UserServiceGrpc;
-import io.grpc.Context;
+import com.rideApp.UserService.GetProfileRequest;
+import com.rideApp.UserService.RiderProfile;
+import com.rideApp.UserService.UserServiceGrpc;
 import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
+import com.rideApp.UserService.*;
+
+import org.springframework.security.core.context.ReactiveSecurityContextHolder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+
+import java.util.Objects;
+
 @Component
 @RequiredArgsConstructor
 public class UserGrpcClient {
 
-    private User map(UserResponse response) {
-        return User.builder()
-                .id(response.getId())
-                .name(response.getName())
-                .email(response.getEmail())
-                .build();
+    private final UserServiceGrpc.UserServiceStub userServiceStub;
+
+    // ---------------- GET RIDER ----------------
+
+    public Mono<RiderProfile> getRiderProfile() {
+        return getUserId()
+                .flatMap(userId ->
+                        Mono.create(sink ->
+                                userServiceStub.getRiderProfile(
+                                        GetProfileRequest.newBuilder()
+                                                .setUserId(userId)
+                                                .build(),
+                                        new StreamObserver<>() {
+                                            @Override
+                                            public void onNext(RiderProfile value) {
+                                                sink.success(value);
+                                            }
+
+                                            @Override
+                                            public void onError(Throwable t) {
+                                                sink.error(t);
+                                            }
+
+                                            @Override
+                                            public void onCompleted() {}
+                                        }
+                                )
+                        )
+                );
     }
 
+    // ---------------- GET DRIVER ----------------
 
-    private final UserServiceGrpc.UserServiceStub userStub;
+    public Mono<DriverProfile> getDriverProfile() {
+        return getUserId()
+                .flatMap(userId ->
+                        Mono.create(sink ->
+                                userServiceStub.getDriverProfile(
+                                        GetProfileRequest.newBuilder()
+                                                .setUserId(userId)
+                                                .build(),
+                                        new StreamObserver<>() {
+                                            @Override
+                                            public void onNext(DriverProfile value) {
+                                                sink.success(value);
+                                            }
 
-    public Mono<User> getUser(String userId) {
+                                            @Override
+                                            public void onError(Throwable t) {
+                                                sink.error(t);
+                                            }
 
-        return Mono.deferContextual(ctx -> {
-
-            String authHeader = ctx.get("AUTH_HEADER");
-
-            Context grpcContext = Context.current()
-                    .withValue(GrpcJwtInterceptor.AUTH_CONTEXT_KEY, authHeader);
-
-            return Mono.create(sink ->
-                    grpcContext.run(() ->
-                            userStub.getUser(
-                                    GetUserRequest.newBuilder()
-                                            .setUserId(userId)
-                                            .build(),
-                                    new StreamObserver<>() {
-                                        @Override
-                                        public void onNext(UserResponse value) {
-                                            sink.success(map(value));
+                                            @Override
+                                            public void onCompleted() {}
                                         }
-
-                                        @Override
-                                        public void onError(Throwable t) {
-                                            sink.error(t);
-                                        }
-
-                                        @Override
-                                        public void onCompleted() {}
-                                    }
-                            )
-                    )
-            );
-        });
+                                )
+                        )
+                );
     }
 
+    // ---------------- CREATE RIDER ----------------
+
+    public Mono<Void> createRider(String name) {
+        return getUserId()
+                .flatMap(userId ->
+                        Mono.create(sink ->
+                                userServiceStub.createRider(
+                                        CreateRiderRequest.newBuilder()
+                                                .setUserId(userId)
+                                                .setName(name)
+                                                .build(),
+                                        emptyObserver(sink)
+                                )
+                        )
+                );
+    }
+
+    // ---------------- CREATE DRIVER ----------------
+
+    public Mono<Void> createDriver() {
+        return getUserId()
+                .flatMap(userId ->
+                        Mono.create(sink ->
+                                userServiceStub.createDriver(
+                                        CreateDriverRequest.newBuilder()
+                                                .setUserId(userId)
+                                                .build(),
+                                        emptyObserver(sink)
+                                )
+                        )
+                );
+    }
+
+    // ---------------- HELPERS ----------------
+
+    private Mono<String> getUserId() {
+        return ReactiveSecurityContextHolder.getContext()
+                .map(ctx -> (JwtAuthenticationToken) Objects.requireNonNull(ctx.getAuthentication()))
+                .map(JwtAuthenticationToken::getName);
+    }
+
+    private StreamObserver<Empty> emptyObserver(reactor.core.publisher.MonoSink<Void> sink) {
+        return new StreamObserver<>() {
+            @Override public void onNext(Empty value) {}
+            @Override public void onError(Throwable t) { sink.error(t); }
+            @Override public void onCompleted() { sink.success(); }
+        };
+    }
 }

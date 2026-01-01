@@ -1,21 +1,43 @@
 syntax = "proto3";
 
-package user;
-
 option java_multiple_files = true;
-option java_package = "com.rideApp.BFF.user";
+option java_package = "com.rideApp.UserService";
 option java_outer_classname = "UserProto";
-
 service UserService {
-  rpc GetUser (GetUserRequest) returns (UserResponse);
+
+  // Called once after signup
+  rpc CreateRider(CreateRiderRequest) returns (Empty);
+  rpc CreateDriver(CreateDriverRequest) returns (Empty);
+
+  // Protected routes (JWT already validated by BFF)
+  rpc GetRiderProfile(GetProfileRequest) returns (RiderProfile);
+  rpc GetDriverProfile(GetProfileRequest) returns (DriverProfile);
 }
 
-message GetUserRequest {
-  string user_id = 1;
-}
-
-message UserResponse {
-  string id = 1;
+message CreateRiderRequest {
+  string userId = 1;
   string name = 2;
-  string email = 3;
 }
+
+message CreateDriverRequest {
+  string userId = 1;
+}
+
+message GetProfileRequest {
+  string userId = 1;
+}
+
+message RiderProfile {
+  string userId = 1;
+  string name = 2;
+  double rating = 3;
+  int32 totalRides = 4;
+}
+
+message DriverProfile {
+  string userId = 1;
+  string status = 2;
+  double rating = 3;
+}
+
+message Empty {}
