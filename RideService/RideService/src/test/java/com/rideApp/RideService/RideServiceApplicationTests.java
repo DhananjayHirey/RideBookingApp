@@ -1,4 +1,4 @@
-package com.rideAop.RideService;
+package com.rideApp.RideService;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

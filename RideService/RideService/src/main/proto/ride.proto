@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.rideApp.RideService";
+
+service RideService {
+  rpc CreateRide(CreateRideRequest) returns (CreateRideResponse);
+  rpc CancelRide(CancelRideRequest) returns (Empty);
+}
+
+message CreateRideRequest {
+  string rider_id = 1;
+  double pickup_lat = 2;
+  double pickup_lng = 3;
+  double drop_lat = 4;
+  double drop_lng = 5;
+}
+
+message CreateRideResponse {
+  string ride_id = 1;
+  string status = 2;
+}
+
+message CancelRideRequest {
+  string ride_id = 1;
+  string rider_id = 2;
+}
+
+message Empty {}
