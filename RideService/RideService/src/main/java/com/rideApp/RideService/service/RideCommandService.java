@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -20,6 +21,8 @@ public class RideCommandService {
     private final RideRepository rideRepository;
     private final KafkaTemplate<String, RideRequestedEvent> kafkaTemplate;
 
+
+
     @Transactional
     public Ride createRide(CreateRideRequest request) {
 
@@ -28,10 +31,10 @@ public class RideCommandService {
         Ride ride = Ride.builder()
                 .id(rideId)
                 .riderId(UUID.fromString(request.getRiderId()))
-                .pickupLat(request.getPickupLat())
-                .pickupLng(request.getPickupLng())
-                .dropLat(request.getDropLat())
-                .dropLng(request.getDropLng())
+                .pickupLat(BigDecimal.valueOf(request.getPickupLat()))
+                .pickupLng(BigDecimal.valueOf(request.getPickupLng()))
+                .dropLat(BigDecimal.valueOf(request.getDropLat()))
+                .dropLng(BigDecimal.valueOf(request.getDropLng()))
                 .status(RideStatus.REQUESTED)
                 .createdAt(Instant.now())
                 .build();
@@ -42,14 +45,15 @@ public class RideCommandService {
                 new RideRequestedEvent(
                         rideId,
                         ride.getRiderId(),
-                        ride.getPickupLat(),
-                        ride.getPickupLng()
+                        ride.getPickupLat().doubleValue(),
+                        ride.getPickupLng().doubleValue()
                 );
 
         kafkaTemplate.send("ride.requested", rideId.toString(), event);
 
         return ride;
     }
+
 
     @Transactional
     public void cancelRide(UUID rideId, UUID riderId) {

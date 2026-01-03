@@ -3,6 +3,7 @@ package com.rideApp.RideService.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -21,11 +22,18 @@ public class Ride {
     @Column(nullable = false)
     private UUID riderId;
 
-    private double pickupLat;
-    private double pickupLng;
-    private double dropLat;
-    private double dropLng;
 
+    @Column(name = "drop_lat", precision = 9, scale = 6)
+    private BigDecimal dropLat;
+
+    @Column(name = "drop_lng", precision = 9, scale = 6)
+    private BigDecimal dropLng;
+
+    @Column(name = "pickup_lat", precision = 9, scale = 6)
+    private BigDecimal pickupLat;
+
+    @Column(name = "pickup_lng", precision = 9, scale = 6)
+    private BigDecimal pickupLng;
     @Enumerated(EnumType.STRING)
     private RideStatus status;
 
