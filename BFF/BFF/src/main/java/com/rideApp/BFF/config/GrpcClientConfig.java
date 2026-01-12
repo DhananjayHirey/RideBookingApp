@@ -3,6 +3,7 @@ package com.rideApp.BFF.config;
 import com.rideApp.AuthService.AuthServiceGrpc;
 import com.rideApp.BFF.notification.NotificationServiceGrpc;
 import com.rideApp.BFF.order.OrderServiceGrpc;
+import com.rideApp.RideService.RideServiceGrpc;
 import com.rideApp.UserService.UserServiceGrpc;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
@@ -16,6 +17,13 @@ public class GrpcClientConfig {
         public ManagedChannel userServiceChannel() {
                 return ManagedChannelBuilder
                         .forAddress("localhost", 9091)
+                        .usePlaintext()
+                        .build();
+        }
+        @Bean
+        public ManagedChannel rideServiceChannel() {
+                return ManagedChannelBuilder
+                        .forAddress("localhost", 9095)
                         .usePlaintext()
                         .build();
         }
@@ -42,6 +50,12 @@ public class GrpcClientConfig {
                 ManagedChannel userServiceChannel) {
 
                 return UserServiceGrpc.newStub(userServiceChannel);
+        }
+        @Bean
+        public RideServiceGrpc.RideServiceStub rideServiceStub(
+                ManagedChannel rideServiceChannel) {
+
+                return RideServiceGrpc.newStub(rideServiceChannel);
         }
 
         @Bean
