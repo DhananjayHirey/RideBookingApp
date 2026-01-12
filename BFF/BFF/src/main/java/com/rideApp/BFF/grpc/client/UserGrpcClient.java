@@ -11,6 +11,7 @@ import com.rideApp.UserService.*;
 
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+import reactor.core.publisher.MonoSink;
 
 import java.util.Objects;
 
@@ -119,9 +120,9 @@ public class UserGrpcClient {
                 .map(JwtAuthenticationToken::getName);
     }
 
-    private StreamObserver<Empty> emptyObserver(reactor.core.publisher.MonoSink<Void> sink) {
-        return new StreamObserver<>() {
-            @Override public void onNext(Empty value) {}
+    private StreamObserver<UserEmpty> emptyObserver(MonoSink<Void> sink) {
+        return new StreamObserver<>(){
+            @Override public void onNext(UserEmpty value) {}
             @Override public void onError(Throwable t) { sink.error(t); }
             @Override public void onCompleted() { sink.success(); }
         };

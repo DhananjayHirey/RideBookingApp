@@ -3,7 +3,7 @@ package com.rideApp.RideService.controller;
 import com.rideApp.RideService.*;
 import com.rideApp.RideService.CreateRideRequest;
 import com.rideApp.RideService.CreateRideResponse;
-import com.rideApp.RideService.Empty;
+import com.rideApp.RideService.RideEmpty;
 import com.rideApp.RideService.RideServiceGrpc;
 import com.rideApp.RideService.entity.Ride;
 import com.rideApp.RideService.service.RideCommandService;
@@ -12,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.grpc.server.service.GrpcService;
 
 import java.util.UUID;
+
+//import static sun.java2d.marlin.CollinearSimplifier.SimplifierState.RideEmpty;
 
 @GrpcService
 @RequiredArgsConstructor
@@ -38,14 +40,14 @@ public class RideGrpcController extends RideServiceGrpc.RideServiceImplBase {
     @Override
     public void cancelRide(
             com.rideApp.RideService.CancelRideRequest request,
-            StreamObserver<Empty> responseObserver) {
+            StreamObserver<RideEmpty> responseObserver) {
 
         rideCommandService.cancelRide(
                 UUID.fromString(request.getRideId()),
                 UUID.fromString(request.getRiderId())
         );
 
-        responseObserver.onNext(Empty.newBuilder().build());
+        responseObserver.onNext(RideEmpty.newBuilder().build());
         responseObserver.onCompleted();
     }
 }

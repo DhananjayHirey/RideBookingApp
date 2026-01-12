@@ -4,7 +4,7 @@ import com.rideApp.UserService.*;
 import com.rideApp.UserService.CreateDriverRequest;
 import com.rideApp.UserService.CreateRiderRequest;
 import com.rideApp.UserService.DriverProfile;
-import com.rideApp.UserService.Empty;
+import com.rideApp.UserService.UserEmpty;
 import com.rideApp.UserService.GetProfileRequest;
 import com.rideApp.UserService.RiderProfile;
 import com.rideApp.UserService.UserServiceGrpc;
@@ -32,7 +32,7 @@ public class UserGrpcService extends UserServiceGrpc.UserServiceImplBase{
 
     @Override
     public void createRider(CreateRiderRequest request,
-                            StreamObserver<Empty> observer) {
+                            StreamObserver<UserEmpty> observer) {
 
         Rider rider = new Rider();
         rider.setUserId(UUID.fromString(request.getUserId()));
@@ -40,7 +40,7 @@ public class UserGrpcService extends UserServiceGrpc.UserServiceImplBase{
 
         riderRepo.save(rider);
 
-        observer.onNext(Empty.newBuilder().build());
+        observer.onNext(UserEmpty.newBuilder().build());
         observer.onCompleted();
     }
 
@@ -65,7 +65,7 @@ public class UserGrpcService extends UserServiceGrpc.UserServiceImplBase{
 
     @Override
     public void createDriver(CreateDriverRequest request,
-                             StreamObserver<Empty> observer) {
+                             StreamObserver<UserEmpty> observer) {
 
         UUID userId = UUID.fromString(request.getUserId());
 
@@ -84,7 +84,7 @@ public class UserGrpcService extends UserServiceGrpc.UserServiceImplBase{
 
         driverRepo.save(driver);
 
-        observer.onNext(Empty.newBuilder().build());
+        observer.onNext(UserEmpty.newBuilder().build());
         observer.onCompleted();
     }
 
