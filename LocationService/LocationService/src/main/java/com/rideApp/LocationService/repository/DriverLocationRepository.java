@@ -39,6 +39,9 @@ public class DriverLocationRepository {
                         new Point(lng, lat),
                         driverId
                 );
+                System.out.println("Updated location for driver " + driverId);
+                System.out.println("lat " + lat);
+                System.out.println("lng " + lng);
     }
 
     public List<String> findNearby(
