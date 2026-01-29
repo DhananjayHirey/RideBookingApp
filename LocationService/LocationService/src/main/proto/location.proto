@@ -1,15 +1,15 @@
 syntax = "proto3";
 
+package location;
+
 option java_multiple_files = true;
 option java_package = "com.rideApp.location";
 
 service LocationService {
 
-  // Driver sends continuous location updates
   rpc StreamDriverLocation(stream LocationUpdate)
       returns (Ack);
 
-  // Matching service queries nearby drivers
   rpc FindNearbyDrivers(NearbyDriversRequest)
       returns (NearbyDriversResponse);
 }
