@@ -1,17 +1,21 @@
-package com.RIdeApp.LocationService.controller;
+package com.rideApp.LocationService.controller;
 
-import com.RIdeApp.LocationService.repository.DriverLocationRepository;
+import com.rideApp.LocationService.repository.DriverLocationRepository;
 import com.rideApp.location.*;
 import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
 import net.devh.boot.grpc.server.service.GrpcService;
 
 @GrpcService
-@RequiredArgsConstructor
+//@RequiredArgsConstructor
 public class LocationGrpcController
         extends LocationServiceGrpc.LocationServiceImplBase {
 
     private final DriverLocationRepository repo;
+
+    public LocationGrpcController(DriverLocationRepository repo) {
+        this.repo = repo;
+    }
 
     @Override
     public StreamObserver<LocationUpdate> streamDriverLocation(

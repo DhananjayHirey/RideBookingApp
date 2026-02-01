@@ -1,6 +1,7 @@
-package com.RIdeApp.LocationService.repository;
+package com.rideApp.LocationService.repository;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.geo.Circle;
 import org.springframework.data.geo.Distance;
 import org.springframework.data.geo.GeoResults;
@@ -13,12 +14,19 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-@RequiredArgsConstructor
+//@RequiredArgsConstructor
 public class DriverLocationRepository {
 
     private static final String KEY = "drivers:available";
 
     private final RedisTemplate<String,String> redis;
+
+    public DriverLocationRepository(
+            @Qualifier("redisTemplate")
+            RedisTemplate<String,String> redis) {
+        this.redis = redis;
+    }
+
 
     public void updateLocation(String driverId,double lat,double lng,boolean available){
 

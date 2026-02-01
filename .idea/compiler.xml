@@ -18,24 +18,37 @@
         </processorPath>
         <module name="AuthService" />
       </profile>
-      <profile name="Annotation profile for LocationService" enabled="true">
+      <profile name="Annotation profile for BFF" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.42/lombok-1.18.42.jar" />
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.42/lombok-1.18.42.jar" />
+        </processorPath>
+        <module name="BFF" />
+      </profile>
+      <profile name="Annotation profile for UserService" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="false">
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.42/lombok-1.18.42.jar" />
         </processorPath>
-        <module name="RideService" />
-        <module name="BFF" />
         <module name="UserService" />
+        <module name="RideService" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="LocationService (1)" target="21" />
+    </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="AuthService" options="-parameters" />
       <module name="BFF" options="-parameters" />
       <module name="LocationService" options="-parameters" />
+      <module name="LocationService (1)" options="-parameters" />
       <module name="RideService" options="-parameters" />
       <module name="UserService" options="-parameters" />
     </option>
