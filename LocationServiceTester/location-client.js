@@ -1,21 +1,23 @@
 const grpc = require("@grpc/grpc-js");
 const protoLoader = require("@grpc/proto-loader");
 
-const packageDef = protoLoader.loadSync("./location.proto", { keepCase: true });
+const packageDef = protoLoader.loadSync("./location.proto", {
+  keepCase: true,
+});
 
 const proto = grpc.loadPackageDefinition(packageDef).location;
+
 const client = new proto.LocationService(
   "localhost:9093",
   grpc.credentials.createInsecure(),
 );
 
-const stream = client.StreamDriverLocation((err, msg) => {
-  if (err) {
-    console.error(err);
-  } else {
-    console.log("Stream completed");
-  }
+const stream = client.streamDriverLocation((err, ack) => {
+  if (err) console.error(err);
+  else console.log("ACK:", ack);
 });
+
+stream.on("error", console.error);
 
 const driverId = "driver-123";
 
