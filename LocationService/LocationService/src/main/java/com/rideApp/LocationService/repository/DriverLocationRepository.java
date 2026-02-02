@@ -27,6 +27,12 @@ public class DriverLocationRepository {
         this.redis = redis;
     }
 
+    public boolean claimDriver(String driverId) {
+        Long removed = redis.opsForZSet().remove(KEY, driverId);
+        return removed != null && removed == 1;
+    }
+
+
 
     public void updateLocation(String driverId,double lat,double lng,boolean available){
 

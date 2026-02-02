@@ -12,6 +12,8 @@ service LocationService {
 
   rpc FindNearbyDrivers(NearbyDriversRequest)
       returns (NearbyDriversResponse);
+  rpc ClaimDriver(ClaimDriverRequest)
+      returns (ClaimDriverResponse);
 }
 
 message LocationUpdate {
@@ -35,3 +37,12 @@ message NearbyDriversResponse {
 message Ack {
   bool success = 1;
 }
+message ClaimDriverRequest {
+  string driver_id = 1;
+}
+
+message ClaimDriverResponse {
+  bool success = 1;
+}
+
+
