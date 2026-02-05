@@ -2,6 +2,7 @@ package com.rideApp.RideService.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -22,7 +23,6 @@ public class Ride {
     @Column(nullable = false)
     private UUID riderId;
 
-
     @Column(name = "drop_lat", precision = 9, scale = 6)
     private BigDecimal dropLat;
 
@@ -34,8 +34,14 @@ public class Ride {
 
     @Column(name = "pickup_lng", precision = 9, scale = 6)
     private BigDecimal pickupLng;
-    @Enumerated(EnumType.STRING)
-    private RideStatus status;
 
+    // 🔴 FIX #1 — status must be NOT NULL + default value
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private RideStatus status = RideStatus.REQUESTED;
+
+    // 🔴 FIX #2 — auto-populate created_at + not nullable
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 }

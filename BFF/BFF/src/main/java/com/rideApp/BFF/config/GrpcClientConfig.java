@@ -23,7 +23,7 @@ public class GrpcClientConfig {
         @Bean
         public ManagedChannel rideServiceChannel() {
                 return ManagedChannelBuilder
-                        .forAddress("localhost", 9095)
+                        .forAddress("localhost", 9094)
                         .usePlaintext()
                         .build();
         }
