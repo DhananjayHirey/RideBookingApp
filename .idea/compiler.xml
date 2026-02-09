@@ -30,7 +30,7 @@
         <module name="UserService" />
         <module name="BFF" />
       </profile>
-      <profile name="Annotation profile for MatchingService" enabled="true">
+      <profile name="Annotation profile for TripService" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />

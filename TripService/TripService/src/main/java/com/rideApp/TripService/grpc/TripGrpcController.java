@@ -3,7 +3,8 @@ package com.rideApp.TripService.grpc;
 import com.rideApp.TripService.StartTripRequest;
 import com.rideApp.TripService.TripResponse;
 import com.rideApp.TripService.TripServiceGrpc;
-import org.springframework.grpc.server.service.GrpcService;
+import net.devh.boot.grpc.server.service.GrpcService;
+//import org.springframework.grpc.server.service.GrpcService;
 
 @GrpcService
 public class TripGrpcController extends TripServiceGrpc.TripServiceImplBase {
