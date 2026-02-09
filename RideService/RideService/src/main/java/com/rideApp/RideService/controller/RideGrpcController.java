@@ -9,6 +9,7 @@ import com.rideApp.RideService.entity.Ride;
 import com.rideApp.RideService.service.RideCommandService;
 import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.grpc.server.service.GrpcService;
 
 import java.util.UUID;
@@ -19,6 +20,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class RideGrpcController extends RideServiceGrpc.RideServiceImplBase {
 
+    @Autowired
     private final RideCommandService rideCommandService;
 
     @Override

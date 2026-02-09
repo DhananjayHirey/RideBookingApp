@@ -8,7 +8,7 @@ const packageDef = protoLoader.loadSync("./location.proto", {
 const proto = grpc.loadPackageDefinition(packageDef).location;
 
 const client = new proto.LocationService(
-  "localhost:9093",
+  "localhost:9096",
   grpc.credentials.createInsecure(),
 );
 

@@ -4,28 +4,26 @@ import com.rideApp.MatchingService.repository.DriverGeoRepository;
 import io.grpc.stub.StreamObserver;
 import net.devh.boot.grpc.server.service.GrpcService;
 
-
-
 @GrpcService
 public class MatchingGrpcController
         extends com.rideApp.matching.MatchingServiceGrpc.MatchingServiceImplBase {
 
     private final DriverGeoRepository repo;
 
-    public MatchingGrpcController(DriverGeoRepository repo){
+    public MatchingGrpcController(DriverGeoRepository repo) {
         this.repo = repo;
     }
 
     @Override
     public void matchRide(
             com.rideApp.matching.MatchRideRequest req,
-            StreamObserver<com.rideApp.matching.MatchRideResponse> o){
+            StreamObserver<com.rideApp.matching.MatchRideResponse> o) {
 
-        var drivers = repo.nearby(req.getLat(),req.getLng());
+        var drivers = repo.nearby(req.getLat(), req.getLng());
 
-        for(String d:drivers){
+        for (String d : drivers) {
 
-            if(repo.lockDriver(d,req.getRideId())){
+            if (repo.lockDriver(d, java.util.UUID.fromString(req.getRideId()))) {
 
                 repo.removeFromPool(d);
 

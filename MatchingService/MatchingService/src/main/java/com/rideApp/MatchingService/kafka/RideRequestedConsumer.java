@@ -4,8 +4,10 @@ import com.rideApp.MatchingService.model.DriverMatched;
 import com.rideApp.MatchingService.model.RideRequested;
 import com.rideApp.MatchingService.repository.DriverGeoRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -13,21 +15,30 @@ import org.springframework.stereotype.Component;
 public class RideRequestedConsumer {
 
     private final DriverGeoRepository repo;
+
+    @Autowired
     private final KafkaTemplate<String, DriverMatched> kafka;
 
-    @KafkaListener(topics="ride.requested",groupId="matching")
-    public void consume(RideRequested r){
+    @KafkaListener(topics = "ride.requested", groupId = "matching")
+    public void consume(RideRequested r) {
 
-        var drivers = repo.nearby(r.lat(),r.lng());
+        System.out.println("MatchingService received the requested ride: ");
+        System.out.println("RideId: "+r.getRideId());
+        System.out.println("Pickup Lat: "+r.getPickupLat());
+        System.out.println("Pickup Lng: "+r.getPickupLng());
+        System.out.println("RiderId: "+r.getRiderId());
 
-        for(String d:drivers){
+        var drivers = repo.nearby(r.getPickupLat(), r.getPickupLng());
 
-            if(repo.lockDriver(d,r.rideId())){
+        for (String d : drivers) {
+
+            if (repo.lockDriver(d, r.getRideId())) {
 
                 repo.removeFromPool(d);
+                System.out.println("Matched driver " + d + " for ride " + r.getRideId());
 
                 kafka.send("driver.matched",
-                        new DriverMatched(r.rideId(),d));
+                        new DriverMatched(r.getRideId(), d));
 
                 return;
             }

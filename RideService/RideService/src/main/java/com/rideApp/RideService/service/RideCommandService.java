@@ -7,6 +7,7 @@ import com.rideApp.RideService.event.RideRequestedEvent;
 import com.rideApp.RideService.repository.RideRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
@@ -19,7 +20,9 @@ import java.util.UUID;
 public class RideCommandService {
 
     private final RideRepository rideRepository;
-    private final KafkaTemplate<String, RideRequestedEvent> kafkaTemplate;
+
+    @Autowired
+    private KafkaTemplate<String, RideRequestedEvent> kafkaTemplate;
 
 
 
@@ -50,6 +53,11 @@ public class RideCommandService {
                 );
 
         kafkaTemplate.send("ride.requested", rideId.toString(), event);
+        System.out.println("RideService sent ride: ");
+        System.out.println("RideId: "+event.getRideId());
+        System.out.println("Pickup Lat: "+event.getPickupLat());
+        System.out.println("Pickup Lng: "+event.getPickupLng());
+        System.out.println("RiderId: "+event.getRiderId());
 
         return ride;
     }

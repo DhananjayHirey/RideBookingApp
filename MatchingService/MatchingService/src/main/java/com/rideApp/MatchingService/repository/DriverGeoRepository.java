@@ -18,38 +18,38 @@ public class DriverGeoRepository {
     private static final String GEO = "drivers:available";
     private static final String LOCK = "driver:lock:";
 
-    private final RedisTemplate<String,String> redis;
+    private final RedisTemplate<String, String> redis;
 
-    public DriverGeoRepository(RedisTemplate<String,String> redis){
+    public DriverGeoRepository(RedisTemplate<String, String> redis) {
         this.redis = redis;
     }
 
-    public List<String> nearby(double lat, double lng){
+    public List<String> nearby(double lat, double lng) {
 
-        GeoResults<RedisGeoCommands.GeoLocation<String>> res =
-                redis.opsForGeo().radius(
-                        GEO,
-                        new Circle(new Point(lng,lat),
-                                new Distance(3000, Metrics.METERS)));
+        GeoResults<RedisGeoCommands.GeoLocation<String>> res = redis.opsForGeo().radius(
+                GEO,
+                new Circle(new Point(lng, lat),
+                        new Distance(3000, Metrics.METERS)));
 
-        if(res==null) return List.of();
+        if (res == null)
+            return List.of();
 
         return res.getContent().stream()
-                .map(r->r.getContent().getName())
+                .map(r -> r.getContent().getName())
                 .toList();
     }
 
-    public boolean lockDriver(String driverId,String rideId){
+    public boolean lockDriver(String driverId, java.util.UUID rideId) {
 
         Boolean ok = redis.opsForValue().setIfAbsent(
-                LOCK+driverId,
-                rideId,
+                LOCK + driverId,
+                rideId.toString(),
                 Duration.ofSeconds(30));
 
         return Boolean.TRUE.equals(ok);
     }
 
-    public void removeFromPool(String driverId){
-        redis.opsForGeo().remove(GEO,driverId);
+    public void removeFromPool(String driverId) {
+        redis.opsForGeo().remove(GEO, driverId);
     }
 }

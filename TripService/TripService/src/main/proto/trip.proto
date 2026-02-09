@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.rideApp.TripService";
+option java_outer_classname = "TripProto";
+
+service TripService {
+  rpc StartTrip (StartTripRequest) returns (TripResponse);
+  rpc EndTrip (EndTripRequest) returns (TripResponse);
+  rpc CancelTrip (CancelTripRequest) returns (TripResponse);
+}
+
+message StartTripRequest {
+  string tripId = 1;
+}
+
+message EndTripRequest {
+  string tripId = 1;
+}
+
+message CancelTripRequest {
+  string tripId = 1;
+}
+
+message TripResponse {
+  string tripId = 1;
+  string status = 2;
+}

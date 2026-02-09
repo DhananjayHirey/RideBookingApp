@@ -75,7 +75,7 @@ public class GrpcClientConfig {
         @Bean
         public ManagedChannel authServiceChannel() {
                 return ManagedChannelBuilder
-                        .forAddress("localhost", 9092)
+                        .forAddress("localhost", 9095)
                         .usePlaintext()
                         .build();
         }

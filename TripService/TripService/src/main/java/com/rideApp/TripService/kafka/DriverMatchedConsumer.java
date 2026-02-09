@@ -13,8 +13,12 @@ public class DriverMatchedConsumer {
     private final TripCommandService tripService;
 
     @KafkaListener(topics="driver.matched",groupId="trip")
-    public void onDriverMatched(DriverMatchedEvent e){
+    public void consume(DriverMatchedEvent e){
 
-        tripService.startTrip(e.rideId(), e.driverId());
+        System.out.println("Driver Matched Event consumed in TripService: ");
+        System.out.println("Ride ID: "+e.getRideId());
+        System.out.println("Driver ID: "+e.getDriverId());
+
+        tripService.startTrip(e.getRideId(), e.getDriverId());
     }
 }
