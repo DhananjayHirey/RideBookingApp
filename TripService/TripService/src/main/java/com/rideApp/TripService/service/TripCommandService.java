@@ -31,6 +31,6 @@ public class TripCommandService {
 
         repo.save(trip);
 
-        rideClient.markRideMatched(rideId, driverId);
+//        rideClient.markRideMatched(rideId, driverId);
     }
 }

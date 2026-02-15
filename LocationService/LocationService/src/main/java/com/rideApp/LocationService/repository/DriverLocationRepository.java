@@ -13,8 +13,8 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-@Repository
 //@RequiredArgsConstructor
+@Repository
 public class DriverLocationRepository {
 
     private static final String KEY = "drivers:available";
@@ -27,9 +27,30 @@ public class DriverLocationRepository {
         this.redis = redis;
     }
 
-    public boolean claimDriver(String driverId) {
-        Long removed = redis.opsForZSet().remove(KEY, driverId);
-        return removed != null && removed == 1;
+    public boolean claimDriver(String driverId, String rideId) {
+        String lockKey = "driver:lock:" + driverId;
+
+        
+
+        Boolean locked = redis.opsForValue().setIfAbsent(
+                lockKey,
+                rideId,
+                java.time.Duration.ofSeconds(30));
+
+        if (!Boolean.TRUE.equals(locked)) {
+            return false;
+        }
+
+        Long removed = redis.opsForGeo().remove(KEY, driverId);
+
+        if (removed == null || removed != 1) {
+            redis.delete(lockKey);
+            return false;
+        }
+
+        System.out.println("Driver " + driverId + " claimed for ride " + rideId);
+
+        return true;
     }
 
 

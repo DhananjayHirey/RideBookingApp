@@ -4,6 +4,7 @@ package location;
 
 option java_multiple_files = true;
 option java_package = "com.rideApp.location";
+option java_outer_classname="LocationProto";
 
 service LocationService {
 

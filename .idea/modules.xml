@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/LocationService/LocationService/LocationService.iml" filepath="$PROJECT_DIR$/LocationService/LocationService/LocationService.iml" />
       <module fileurl="file://$PROJECT_DIR$/MatchingService/MatchingService/MatchingService.iml" filepath="$PROJECT_DIR$/MatchingService/MatchingService/MatchingService.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/RideBookingApp.iml" filepath="$PROJECT_DIR$/.idea/RideBookingApp.iml" />
       <module fileurl="file://$PROJECT_DIR$/RideService/RideService/RideService.iml" filepath="$PROJECT_DIR$/RideService/RideService/RideService.iml" />

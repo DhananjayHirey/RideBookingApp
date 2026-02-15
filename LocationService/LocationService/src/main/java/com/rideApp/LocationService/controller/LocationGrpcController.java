@@ -1,7 +1,14 @@
 package com.rideApp.LocationService.controller;
 
 import com.rideApp.LocationService.repository.DriverLocationRepository;
-import com.rideApp.location.*;
+//import com.rideApp.location.*;
+import com.rideApp.location.Ack;
+import com.rideApp.location.ClaimDriverRequest;
+import com.rideApp.location.ClaimDriverResponse;
+import com.rideApp.location.LocationServiceGrpc;
+import com.rideApp.location.LocationUpdate;
+import com.rideApp.location.NearbyDriversRequest;
+import com.rideApp.location.NearbyDriversResponse;
 import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
 import net.devh.boot.grpc.server.service.GrpcService;
@@ -55,4 +62,23 @@ public class LocationGrpcController
 
         o.onCompleted();
     }
+
+    @Override
+    public void claimDriver(
+            ClaimDriverRequest req,
+            StreamObserver<ClaimDriverResponse> responseObserver) {
+
+        boolean success = repo.claimDriver(
+                req.getDriverId(),
+                req.getRideId());
+
+        responseObserver.onNext(
+                ClaimDriverResponse.newBuilder()
+                        .setSuccess(success)
+                        .build()
+        );
+
+        responseObserver.onCompleted();
+    }
+
 }

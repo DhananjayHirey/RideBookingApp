@@ -1,6 +1,8 @@
 package com.rideApp.MatchingService.grpc;
 
-import com.rideApp.MatchingService.repository.DriverGeoRepository;
+//NOTE : The current architecture triggers matching service in an event driven async manner...so these functions are just created to explicitly math a given specific ride in future if need synchronously.
+
+import com.rideApp.MatchingService.grpc.LocationGrpcClient;
 import io.grpc.stub.StreamObserver;
 import net.devh.boot.grpc.server.service.GrpcService;
 
@@ -8,10 +10,10 @@ import net.devh.boot.grpc.server.service.GrpcService;
 public class MatchingGrpcController
         extends com.rideApp.matching.MatchingServiceGrpc.MatchingServiceImplBase {
 
-    private final DriverGeoRepository repo;
+    private final LocationGrpcClient locationClient;
 
-    public MatchingGrpcController(DriverGeoRepository repo) {
-        this.repo = repo;
+    public MatchingGrpcController(LocationGrpcClient locationClient) {
+        this.locationClient = locationClient;
     }
 
     @Override
@@ -19,13 +21,19 @@ public class MatchingGrpcController
             com.rideApp.matching.MatchRideRequest req,
             StreamObserver<com.rideApp.matching.MatchRideResponse> o) {
 
-        var drivers = repo.nearby(req.getLat(), req.getLng());
+        var drivers = locationClient.findNearby(
+                req.getLat(),
+                req.getLng()
+        );
 
         for (String d : drivers) {
 
-            if (repo.lockDriver(d, java.util.UUID.fromString(req.getRideId()))) {
+            boolean claimed = locationClient.claimDriver(
+                    d,
+                    req.getRideId()
+            );
 
-                repo.removeFromPool(d);
+            if (claimed) {
 
                 o.onNext(com.rideApp.matching.MatchRideResponse.newBuilder()
                         .setSuccess(true)
