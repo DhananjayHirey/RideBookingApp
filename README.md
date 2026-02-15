@@ -1,138 +1,265 @@
 # 🚖 RideBookingApp (QuickTrip)
 
-> **A high-performance, microservices-based ride-booking platform built for scale.**
+> A horizontally scalable, event-driven ride-hailing backend built using modern distributed systems principles.
 
-![Java](https://img.shields.io/badge/Java-21-orange) ![Spring Boot](https://img.shields.io/badge/Spring_Boot-4.0.1-green) ![gRPC](https://img.shields.io/badge/gRPC-Protobuf-blue) ![Kafka](https://img.shields.io/badge/Apache_Kafka-Event_Driven-red) ![Redis](https://img.shields.io/badge/Redis-Caching-red) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Database-blue)
+![Java](https://img.shields.io/badge/Java-21-orange) 
+![Spring Boot](https://img.shields.io/badge/Spring_Boot-4.x-green) 
+![gRPC](https://img.shields.io/badge/gRPC-Protobuf-blue) 
+![Kafka](https://img.shields.io/badge/Apache_Kafka-Event_Driven-red) 
+![Redis](https://img.shields.io/badge/Redis-GeoSpatial-red) 
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-ACID-blue)
 
 ---
 
-## 📖 Overview
+# 📖 Overview
 
-**RideBookingApp** (internally "QuickTrip") is a robust, distributed system designed to handle the complexities of a modern ride-hailing service. It leverages a **Microservices Architecture** to ensure independent scalability, fault tolerance, and rapid development cycles.
+**RideBookingApp (QuickTrip)** is a distributed backend system inspired by real-world ride-hailing platforms.
 
-The system uses **gRPC** for low-latency inter-service communication and **Apache Kafka** for asynchronous, event-driven processing (e.g., ride status updates, driver matching).
+The architecture separates:
 
-## 🏗️ Architecture
+- Ride Orchestration
+- Driver Matching
+- Trip Lifecycle Management
+- Real-time Location Tracking
+- Authentication & User Management
 
-The system follows a **Backend-For-Frontend (BFF)** pattern where a central gateway manages client requests and orchestrates calls to backend microservices.
+This separation enables independent scaling of high-load components such as matching and trip tracking.
+
+---
+
+# 🏗 System Architecture
+
+## 🔹 High-Level Architecture
 
 ```mermaid
 graph TD
-    Client[Mobile/Web Client] -->|REST/HTTP| BFF[BFF Service]
-    
-    subgraph "Microservices Cluster"
-        BFF -->|gRPC| Auth[Auth Service]
-        BFF -->|gRPC| User[User Service]
-        BFF -->|gRPC| Ride[Ride Service]
-        BFF -->|gRPC| Location[Location Service]
-        
-        Ride -.->|Events| Kafka{Apache Kafka}
+
+    Client[Mobile / Web Client] -->|REST/HTTP| BFF[BFF Gateway]
+
+    subgraph Core Microservices
+        BFF -->|gRPC| AuthService
+        BFF -->|gRPC| UserService
+        BFF -->|gRPC| RideService
+        BFF -->|gRPC| TripService
+        BFF -->|gRPC| MatchingService
+        BFF -->|gRPC| LocationService
     end
-    
-    subgraph "Data Layer"
-        Auth --> Redis[(Redis Cache)]
-        Auth --> AuthDB[(PostgreSQL)]
-        User --> UserDB[(PostgreSQL)]
-        Ride --> RideDB[(PostgreSQL)]
-        Location --> GeoRedis[(Redis Geo)]
+
+    RideService -->|Publish RideRequested| Kafka[(Apache Kafka)]
+    Kafka -->|Consume| MatchingService
+    MatchingService -->|Driver Assigned Event| Kafka
+    Kafka -->|Consume| TripService
+
+    subgraph Data Layer
+        AuthService --> AuthDB[(PostgreSQL)]
+        UserService --> UserDB[(PostgreSQL)]
+        RideService --> RideDB[(PostgreSQL)]
+        TripService --> TripDB[(PostgreSQL)]
+        AuthService --> RedisAuth[(Redis Cache)]
+        LocationService --> GeoRedis[(Redis GEO)]
     end
 ```
 
-## 🛠️ Technology Stack
+---
 
-| Category | Technology | Description |
-| :--- | :--- | :--- |
-| **Language** | **Java 21** | Utilizing the latest LTS features for performance and syntax improvements. |
-| **Framework** | **Spring Boot 4.0.1** | Core framework for building production-ready microservices (LocationService on 3.2.5). |
-| **Communication** | **gRPC & Protobuf** | High-performance RPC framework for inter-service communication. |
-| **Messaging** | **Apache Kafka** | Distributed streaming platform for asynchronous events. |
-| **Database** | **PostgreSQL** | Primary relational database for structured data. |
-| **Caching/Geo** | **Redis** | Used for session caching and geospatial data storage (Driver locations). |
-| **Migration** | **Flyway** | Database schema migration tool. |
-| **Build Tool** | **Maven** | Dependency management and build automation. |
+# 🔄 Ride → Match → Trip Flow
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant BFF
+    participant Ride
+    participant Matching
+    participant Location
+    participant Trip
+    participant Kafka
+
+    Client->>BFF: Create Ride Request
+    BFF->>Ride: gRPC CreateRide()
+    Ride->>Kafka: Publish RIDE_REQUESTED
+
+    Kafka->>Matching: Consume Event
+    Matching->>Location: Find Nearby Drivers
+    Location-->>Matching: Driver List
+    Matching->>Kafka: Publish DRIVER_ASSIGNED
+
+    Kafka->>Trip: Consume DRIVER_ASSIGNED
+    Trip->>Trip: Create Active Trip
+    Trip-->>BFF: Trip Created
+    BFF-->>Client: Confirmation
+```
 
 ---
 
-## 🧩 Microservices
+# 🧩 Microservices Breakdown
 
-### 1. **BFF (Backend-For-Frontend)**
-   - **Role**: The entry point for all client requests. It aggregates data from various microservices and serves the frontend.
-   - **Key Features**: 
-     - Authentication & Authorization Gateway.
-     - Protocol translation (HTTP -> gRPC).
-     - Centralized error handling and validation.
+## 🔐 Auth Service
+- JWT issuance & validation
+- Redis token blacklisting
+- Authentication middleware
 
-### 2. **Auth Service**
-   - **Role**: Manages user identity and security.
-   - **Key Features**:
-     - User Registration & Login.
-     - **JWT** (JSON Web Token) issuance and validation.
-     - **Redis** integration for token blacklisting and caching.
+## 👤 User Service
+- Rider & Driver profiles
+- Ride history
+- Role management
 
-### 3. **User Service**
-   - **Role**: Handles user profiles and data.
-   - **Key Features**:
-     - Driver and Rider profile management.
-     - CRUD operations for user entities.
-     - Stores user preferences and history.
+## 🚘 Ride Service (Request Orchestrator)
+- Creates ride requests
+- Validates input
+- Publishes `RIDE_REQUESTED` event
+- Persists ride metadata
 
-### 4. **Ride Service**
-   - **Role**: The core engine for booking and managing rides.
-   - **Key Features**:
-     - Ride matching logic.
-     - Fare calculation.
-     - **Kafka Producer/Consumer** for handling ride status changes (REQUESTED, ACCEPTED, COMPLETED).
+## 🎯 Matching Service
+- Consumes `RIDE_REQUESTED`
+- Fetches nearby drivers from LocationService
+- Applies matching algorithm
+- Publishes `DRIVER_ASSIGNED` event
+- Designed for high scalability
 
-### 5. **Location Service**
-   - **Role**: Tracks real-time driver locations.
-   - **Key Features**:
-     - Ingests high-frequency location updates from drivers.
-     - Uses **Redis Geospatial** commands to find nearby drivers efficiently.
-     - optimizing for speed and throughput.
+## 🛣 Trip Service
+- Consumes `DRIVER_ASSIGNED`
+- Creates active trip
+- Handles trip lifecycle:
+  - STARTED
+  - IN_PROGRESS
+  - COMPLETED
+  - CANCELLED
+- Persists trip state
+- Handles fare finalization
+
+## 📍 Location Service
+- High-frequency driver updates
+- Redis GEO indexing
+- Radius-based driver lookup
+
+## 🌉 BFF Gateway
+- Client entry point
+- HTTP → gRPC translation
+- Centralized error handling
+- JWT validation
+
+---
+
+# 📊 Scalability Strategy
+
+| Component | Scaling Strategy |
+|------------|------------------|
+| MatchingService | Horizontally scalable (stateless consumers) |
+| TripService | Scaled per active trip load |
+| RideService | Moderate scaling |
+| LocationService | Redis cluster scaling |
+| Kafka | Partition-based scaling |
+| PostgreSQL | Service-level isolation |
 
 ---
 
-## 🚀 Getting Started
+# 🧠 Architectural Advantages
 
-### Prerequisites
-- **Java 21 SDK** installed.
-- **Maven** installed.
-- **Docker & Docker Compose** (recommended for running databases/brokers).
-- **PostgreSQL** and **Redis** running locally or via Docker.
-- **Kafka** & **Zookeeper** running.
+## Separation of Concerns
 
-### Installation
+- RideService → Request creation
+- MatchingService → Driver selection
+- TripService → Active trip lifecycle
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/DhananjayHirey/RideBookingApp.git
-   cd RideBookingApp
-   ```
+This prevents:
 
-2. **Build the project**
-   Each service is a Maven project. You can build them individually:
-   ```bash
-   cd BFF/BFF
-   mvn clean install
-   ```
-
-3. **Run the Services**
-   Start the services in the following order to ensure dependencies are met:
-   1. `AuthService`
-   2. `UserService`
-   3. `LocationService`
-   4. `RideService`
-   5. `BFF`
-
-   ```bash
-   # Example for running a service
-   mvn spring-boot:run
-   ```
-
-## 🔮 Future Enhancements
-- [ ] **Payment Service**: Integration with Stripe/Razorpay.
-- [ ] **Notification Service**: Push notifications via FCM for ride updates.
-- [ ] **Kubernetes Deployment**: Helm charts for K8s orchestration.
+- Heavy matching logic blocking ride creation
+- Trip state management interfering with matching
+- Tight coupling between services
 
 ---
-*Built with ❤️ by [Dhananjay Hirey](https://github.com/DhananjayHirey)*
+
+# 🏗 Infrastructure View
+
+```mermaid
+graph LR
+
+    subgraph Clients
+        Mobile
+        Web
+    end
+
+    subgraph Application Layer
+        BFF
+        Auth
+        User
+        Ride
+        Matching
+        Trip
+        Location
+    end
+
+    subgraph Messaging
+        Kafka
+    end
+
+    subgraph Storage
+        PostgreSQL
+        Redis
+    end
+
+    Mobile --> BFF
+    Web --> BFF
+
+    BFF --> Ride
+    BFF --> Trip
+    BFF --> Auth
+    BFF --> User
+    BFF --> Matching
+    BFF --> Location
+
+    Ride --> Kafka
+    Kafka --> Matching
+    Matching --> Kafka
+    Kafka --> Trip
+
+    Ride --> PostgreSQL
+    Trip --> PostgreSQL
+    Auth --> PostgreSQL
+    User --> PostgreSQL
+
+    Auth --> Redis
+    Location --> Redis
+```
+
+---
+
+# 📦 Local Setup
+
+```bash
+git clone https://github.com/DhananjayHirey/RideBookingApp.git
+cd RideBookingApp
+docker-compose up
+mvn clean install
+```
+
+Start in order:
+
+1. AuthService  
+2. UserService  
+3. LocationService  
+4. RideService  
+5. MatchingService  
+6. TripService  
+7. BFF  
+
+---
+
+# 🔮 Future Enhancements
+
+- Payment Service
+- Notification Service
+- Surge Pricing Engine
+- Driver Rating System
+- Kubernetes Deployment
+- CI/CD Pipeline
+- Distributed Tracing
+- Circuit Breakers
+
+---
+
+# ❤️ Author
+
+**Dhananjay Hirey**  
+Backend & Distributed Systems Enthusiast  
+Focused on building scalable architectures.
